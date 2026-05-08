@@ -1035,10 +1035,10 @@ MonoBehaviour:
   firstSelected: {fileID: 1268502209}
   apps:
   - name: Photo
-    icon: {fileID: 21300000, guid: fc25d9af949b5a84daea432eaf7783f7, type: 3}
+    icon: {fileID: 21300000, guid: efad389d26648bb40855be1e1ee87bb7, type: 3}
     appPanel: {fileID: 1656281821}
   - name: Spotify
-    icon: {fileID: 21300000, guid: 9e0c10f79be41ec41a1eec30df0eaf5c, type: 3}
+    icon: {fileID: 21300000, guid: 0e620199339c5c14fa3558c0446e49e4, type: 3}
     appPanel: {fileID: 1656281821}
   activeAppIcon: {fileID: 1333312360}
   activeAppIconContainer: {fileID: 1156637900}
@@ -2001,7 +2001,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: fc25d9af949b5a84daea432eaf7783f7, type: 3}
+  m_Sprite: {fileID: 21300000, guid: efad389d26648bb40855be1e1ee87bb7, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -6982,7 +6982,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 9e0c10f79be41ec41a1eec30df0eaf5c, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 0e620199339c5c14fa3558c0446e49e4, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -7399,8 +7399,8 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
-  m_Type: 1
+  m_Sprite: {fileID: 21300000, guid: c87169bfb23099346b755e11156c34af, type: 3}
+  m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 4
