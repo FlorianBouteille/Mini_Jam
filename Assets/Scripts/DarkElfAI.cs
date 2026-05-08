@@ -3,8 +3,10 @@ using UnityEngine;
 public class DarkElfAI : MonoBehaviour
 {
     [Header("Detection")]
-    [Tooltip("Distance at which the enemy detects the player")]
-    public float detectionRange = 20f;
+    [Tooltip("Base detection distance (when no music)")]
+    public float detectionRangeBase = 20f;
+    [Tooltip("Detection distance when player has Spotify playing")]
+    public float detectionRangeWithMusic = 35f;
 
     [Header("Charging")]
     [Tooltip("Speed at which the enemy charges toward the player")]
@@ -28,9 +30,11 @@ public class DarkElfAI : MonoBehaviour
 
     private Transform playerTransform;
     private Light playerLight;
+    private PlayerAppPowers playerAppPowers;
     private Rigidbody rb;
     private bool isCharging;
     private bool isInLight;
+    private float detectionRange;  // Current active detection range
     
     // Patrol state
     private Vector3 startPosition;
@@ -54,9 +58,17 @@ public class DarkElfAI : MonoBehaviour
             playerLight = playerObj.GetComponentInChildren<Light>();
             if (playerLight == null)
                 playerLight = playerObj.GetComponent<Light>();
+            
+            // Try to find PlayerAppPowers for music detection
+            playerAppPowers = playerObj.GetComponent<PlayerAppPowers>();
+            if (playerAppPowers == null)
+                playerAppPowers = playerObj.GetComponentInChildren<PlayerAppPowers>();
         }
         else
             Debug.LogWarning("DarkElfAI: Player not found. Make sure the player GameObject has tag 'Player'.");
+        
+        // Initialize detection range
+        detectionRange = detectionRangeBase;
         
         // Pick first patrol destination
         PickNewPatrolDestination();
@@ -65,6 +77,16 @@ public class DarkElfAI : MonoBehaviour
     void Update()
     {
         if (playerTransform == null) return;
+
+        // Adapt detection range based on music
+        if (playerAppPowers != null && playerAppPowers.MusicOn)
+        {
+            detectionRange = detectionRangeWithMusic;
+        }
+        else
+        {
+            detectionRange = detectionRangeBase;
+        }
 
         // Check distance to player
         float distToPlayer = Vector3.Distance(transform.position, playerTransform.position);
