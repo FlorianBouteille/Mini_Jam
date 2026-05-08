@@ -3,6 +3,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using System;
 using System.Collections.Generic;
+using TMPro;
 [System.Serializable]
 public class AppEntry
 {
@@ -26,16 +27,30 @@ public class UIManager : MonoBehaviour
     public string activeAppName;
     public static Action<int> OnActiveAppChanged;
 
+    [Header("Battery")]
+    public float battery = 100f;
+    public float idleDrainRate = 0.5f;  // % per second when no app active
+    public float activeDrainRate = 2f;  // % per second when app is active
+    public float rechargeRate = 2.5f;
+    public TextMeshProUGUI batteryDisplayTMP;  // Drag the Battery TextMeshPro component here
+
     [Header("Behavior")]
     public KeyCode toggleKey = KeyCode.Tab;
     public MonoBehaviour[] disableOnOpen;
 
     public bool menuOpen { get; private set; }
 
+    private PlayerControls playerControls;
+
     void Start()
     {
         if (menuPanel) menuPanel.SetActive(false);
         menuOpen = false;
+
+        // Find player controls
+        playerControls = FindObjectOfType<PlayerControls>();
+        if (playerControls == null)
+            Debug.LogWarning("UIManager: PlayerControls not found!");
     }
 
     void Awake()
@@ -48,6 +63,27 @@ public class UIManager : MonoBehaviour
     void Update()
     {
         if (Input.GetKeyDown(toggleKey)) ToggleMenu();
+
+        // Handle battery drain or recharge
+        if (playerControls != null && playerControls.IsCharging)
+        {
+            // Recharging
+            battery = Mathf.Min(100f, battery + rechargeRate * Time.deltaTime);
+        }
+        else
+        {
+            // Normal drain
+            float drainRate = (activeAppIndex >= 0) ? activeDrainRate : idleDrainRate;
+            battery = Mathf.Max(0f, battery - drainRate * Time.deltaTime);
+        }
+
+        // Update battery display
+        if (batteryDisplayTMP != null)
+            batteryDisplayTMP.text = Mathf.RoundToInt(battery) + "%";
+
+        // If battery dead, close all apps
+        if (battery <= 0f)
+            CloseAllApps();
     }
 
     public void OpenMenu()
