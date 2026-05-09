@@ -3,6 +3,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using System;
 using System.Collections.Generic;
+using TMPro;
 [System.Serializable]
 public class AppEntry
 {
@@ -19,6 +20,8 @@ public class UIManager : MonoBehaviour
     public List<AppEntry> apps = new List<AppEntry>();
     public Image activeAppIcon;
     public GameObject activeAppIconContainer;
+    [Tooltip("Image affichée quand aucune app n'est sélectionnée")]
+    public Sprite defaultAppIcon;
 
     // active app tracking
     // -1 means no active app
@@ -26,16 +29,49 @@ public class UIManager : MonoBehaviour
     public string activeAppName;
     public static Action<int> OnActiveAppChanged;
 
+    [Header("Battery")]
+    public float battery = 100f;
+    public float idleDrainRate = 0.5f;  // % per second when no app active
+    public float activeDrainRate = 2f;  // % per second when app is active
+    public float rechargeRate = 2.5f;
+    public TextMeshProUGUI batteryDisplayTMP;  // Drag the Battery TextMeshPro component here
+
+    [Header("Health")]
+    public TextMeshProUGUI healthDisplayTMP;  // Displays health as "3.5 / 5"
+
     [Header("Behavior")]
     public KeyCode toggleKey = KeyCode.Tab;
     public MonoBehaviour[] disableOnOpen;
 
     public bool menuOpen { get; private set; }
 
+    private PlayerControls playerControls;
+    private PlayerHealth playerHealth;
+
+    void OnEnable()
+    {
+        PlayerHealth.OnHealthChanged += HandleHealthChanged;
+    }
+
+    void OnDisable()
+    {
+        PlayerHealth.OnHealthChanged -= HandleHealthChanged;
+    }
+
     void Start()
     {
         if (menuPanel) menuPanel.SetActive(false);
         menuOpen = false;
+
+        // Find player controls
+        playerControls = FindObjectOfType<PlayerControls>();
+        if (playerControls == null)
+            Debug.LogWarning("UIManager: PlayerControls not found!");
+
+        // Find player health
+        playerHealth = FindObjectOfType<PlayerHealth>();
+        if (playerHealth == null)
+            Debug.LogWarning("UIManager: PlayerHealth not found!");
     }
 
     void Awake()
@@ -48,6 +84,27 @@ public class UIManager : MonoBehaviour
     void Update()
     {
         if (Input.GetKeyDown(toggleKey)) ToggleMenu();
+
+        // Handle battery drain or recharge
+        if (playerControls != null && playerControls.IsCharging)
+        {
+            // Recharging
+            battery = Mathf.Min(100f, battery + rechargeRate * Time.deltaTime);
+        }
+        else
+        {
+            // Normal drain
+            float drainRate = (activeAppIndex >= 0) ? activeDrainRate : idleDrainRate;
+            battery = Mathf.Max(0f, battery - drainRate * Time.deltaTime);
+        }
+
+        // Update battery display
+        if (batteryDisplayTMP != null)
+            batteryDisplayTMP.text = Mathf.RoundToInt(battery) + "%";
+
+        // If battery dead, close all apps
+        if (battery <= 0f)
+            CloseAllApps();
     }
 
     public void OpenMenu()
@@ -61,6 +118,14 @@ public class UIManager : MonoBehaviour
         {
             foreach (var c in disableOnOpen)
                 if (c != null) c.enabled = false;
+        }
+
+        // Show default icon if no app is active
+        if (activeAppIndex < 0 && activeAppIcon != null)
+        {
+            activeAppIcon.sprite = defaultAppIcon;
+            if (activeAppIconContainer != null)
+                activeAppIconContainer.SetActive(defaultAppIcon != null);
         }
 
         menuOpen = true;
@@ -109,6 +174,15 @@ public class UIManager : MonoBehaviour
         {
             activeAppIndex = -1;
             activeAppName = null;
+            
+            // Show default icon
+            if (activeAppIcon != null)
+            {
+                activeAppIcon.sprite = defaultAppIcon;
+                if (activeAppIconContainer != null)
+                    activeAppIconContainer.SetActive(defaultAppIcon != null);
+            }
+            
             OnActiveAppChanged?.Invoke(-1);
         }
     }
@@ -116,6 +190,15 @@ public class UIManager : MonoBehaviour
     public void CloseAllApps()
     {
         for (int i = 0; i < apps.Count; i++) if (apps[i].appPanel != null) apps[i].appPanel.SetActive(false);
+        
+        // Show default icon
+        if (activeAppIcon != null)
+        {
+            activeAppIcon.sprite = defaultAppIcon;
+            if (activeAppIconContainer != null)
+                activeAppIconContainer.SetActive(defaultAppIcon != null);
+        }
+        
         activeAppIndex = -1;
         activeAppName = null;
         OnActiveAppChanged?.Invoke(-1);
@@ -151,5 +234,14 @@ public class UIManager : MonoBehaviour
     public void ToggleMenu()
     {
         if (menuOpen) CloseMenu(); else OpenMenu();
+    }
+
+    void HandleHealthChanged(int currentHealth, int maxHealth)
+    {
+        if (healthDisplayTMP == null) return;
+
+        float starsDisplay = currentHealth / 2f;
+        float maxStars = maxHealth / 2f;
+        healthDisplayTMP.text = $"{starsDisplay:F1} / {maxStars:F0}";
     }
 }
