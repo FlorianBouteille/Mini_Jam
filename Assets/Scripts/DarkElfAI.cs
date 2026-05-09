@@ -36,6 +36,11 @@ public class DarkElfAI : MonoBehaviour
     private bool isInLight;
     private float detectionRange;  // Current active detection range
     
+    // Animation
+    private Animator animator;
+    private const int ANIM_STATE_GUARD = 0;
+    private const int ANIM_STATE_RUN = 1;
+    
     // Patrol state
     private Vector3 startPosition;
     private Vector3 patrolDestination;
@@ -48,6 +53,11 @@ public class DarkElfAI : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
         startPosition = transform.position;
+        
+        // Get animator from child
+        animator = GetComponentInChildren<Animator>();
+        if (animator == null)
+            Debug.LogWarning("DarkElfAI: Animator not found in children!");
         
         // Try to find player by tag
         GameObject playerObj = GameObject.FindWithTag("Player");
@@ -72,6 +82,10 @@ public class DarkElfAI : MonoBehaviour
         
         // Pick first patrol destination
         PickNewPatrolDestination();
+        
+        // Set initial animation
+        if (animator != null)
+            animator.SetInteger("State", ANIM_STATE_GUARD);
     }
 
     void Update()
@@ -117,6 +131,18 @@ public class DarkElfAI : MonoBehaviour
             patrolTimer -= Time.deltaTime;
             if (patrolTimer <= 0f)
                 PickNewPatrolDestination();
+        }
+
+        // Update animation based on state
+        if (fleeTimer > 0f || isCharging)
+        {
+            if (animator != null)
+                animator.SetInteger("State", ANIM_STATE_RUN);
+        }
+        else
+        {
+            if (animator != null)
+                animator.SetInteger("State", ANIM_STATE_GUARD);
         }
     }
 
