@@ -4,7 +4,7 @@ public class DarkElfAI : MonoBehaviour
 {
     [Header("Detection")]
     [Tooltip("Base detection distance (when no music)")]
-    public float detectionRangeBase = 20f;
+    public float detectionRangeBase = 5f;
     [Tooltip("Detection distance when player has Spotify playing")]
     public float detectionRangeWithMusic = 35f;
 
@@ -34,7 +34,6 @@ public class DarkElfAI : MonoBehaviour
     private Rigidbody rb;
     private bool isCharging;
     private bool isInLight;
-    private float detectionRange;  // Current active detection range
     
     // Animation
     private Animator animator;
@@ -49,9 +48,23 @@ public class DarkElfAI : MonoBehaviour
     // Flee state
     private float fleeTimer;
 
+    // attack
+
+    private Collider attackCollider;
+    private float detectionRange;  // Current active detection range
+    private float attackDist = 2f;
+    private float attackColliderStart = 0.3f;
+    private float attackColliderEnd = 0.5f;
+    private float attackColliderDelay = 0.917f; // Time between attacks
+    private float attackColliderTimer;
+
     void Start()
     {
         rb = GetComponent<Rigidbody>();
+        attackCollider = GetComponentInChildren<BoxCollider>();
+        if (attackCollider != null)
+            attackCollider.enabled = false;
+        attackColliderTimer = 0f;
         startPosition = transform.position;
         
         // Get animator from child
@@ -81,7 +94,7 @@ public class DarkElfAI : MonoBehaviour
         detectionRange = detectionRangeBase;
         
         // Pick first patrol destination
-        PickNewPatrolDestination();
+        // PickNewPatrolDestination();
         
         // Set initial animation
         if (animator != null)
@@ -105,7 +118,9 @@ public class DarkElfAI : MonoBehaviour
         // Check distance to player
         float distToPlayer = Vector3.Distance(transform.position, playerTransform.position);
         isCharging = distToPlayer < detectionRange;
-        
+        if (isCharging)
+            if (animator != null)
+                animator.SetInteger("State", ANIM_STATE_RUN);
         // Check if in light cone
         isInLight = false;
         if (playerLight != null && playerLight.enabled && playerLight.type == LightType.Spot)
@@ -125,13 +140,13 @@ public class DarkElfAI : MonoBehaviour
             fleeTimer -= Time.deltaTime;
         }
         
-        // Update patrol timer (only when not fleeing and not charging)
-        if (!isCharging && fleeTimer <= 0f)
-        {
-            patrolTimer -= Time.deltaTime;
-            if (patrolTimer <= 0f)
-                PickNewPatrolDestination();
-        }
+        // // Update patrol timer (only when not fleeing and not charging)
+        // if (!isCharging && fleeTimer <= 0f)
+        // {
+        //     patrolTimer -= Time.deltaTime;
+        //     if (patrolTimer <= 0f)
+        //         PickNewPatrolDestination();
+        // }
 
         // Update animation based on state
         if (fleeTimer > 0f || isCharging)
@@ -161,7 +176,7 @@ public class DarkElfAI : MonoBehaviour
         }
         else
         {
-            PatrolBehavior();
+            GuardBehavior();
         }
     }
 
@@ -173,40 +188,61 @@ public class DarkElfAI : MonoBehaviour
         // Apply velocity
         rb.linearVelocity = dirToPlayer * chargeSpeed;
 
+        // Check distance to player
+        float distToPlayer = Vector3.Distance(transform.position, playerTransform.position);
+        if (distToPlayer <= attackDist)
+        {
+            if (attackColliderTimer <= 0f)
+                attackColliderTimer = 0f;
+
+            attackColliderTimer += Time.fixedDeltaTime;
+            if (attackColliderTimer >= attackColliderDelay)
+                attackColliderTimer = 0f;
+            else if (attackColliderTimer >= attackColliderEnd && attackCollider != null)
+                attackCollider.enabled = false;
+            else if (attackColliderTimer >= attackColliderStart && attackCollider != null)
+                attackCollider.enabled = true;
+            rb.linearVelocity = Vector3.zero;
+            if (animator != null)
+                animator.SetTrigger("attack");
+        }
+        else
+        {
+            attackColliderTimer = 0f;
+            if (attackCollider != null)
+                attackCollider.enabled = false;
+        }
         // Rotate toward player
         Quaternion targetRot = Quaternion.LookRotation(dirToPlayer);
         transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, 5f * Time.fixedDeltaTime);
     }
 
-    void PatrolBehavior()
+    void GuardBehavior()
     {
-        // Direction toward patrol destination
-        Vector3 dirToDestination = (patrolDestination - transform.position).normalized;
-        float distToDestination = Vector3.Distance(transform.position, patrolDestination);
+        rb.linearVelocity = Vector3.zero;
 
-        // If close to destination, wait (timer handles picking new one)
-        if (distToDestination < 1f)
+        // Check distance to player
+        float distToPlayer = Vector3.Distance(transform.position, playerTransform.position);
+        if (distToPlayer < detectionRangeWithMusic)
         {
-            rb.linearVelocity = Vector3.zero;
-        }
-        else
-        {
-            rb.linearVelocity = dirToDestination * patrolSpeed;
-            
-            // Rotate toward destination
-            Quaternion targetRot = Quaternion.LookRotation(dirToDestination);
-            transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, 3f * Time.fixedDeltaTime);
+
+        // Direction toward player
+        Vector3 dirToPlayer = (playerTransform.position - transform.position).normalized;
+
+        // Rotate toward player
+        Quaternion targetRot = Quaternion.LookRotation(dirToPlayer);
+        transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, 3f * Time.fixedDeltaTime);
         }
     }
 
-    void PickNewPatrolDestination()
-    {
-        // Random point within patrol range
-        Vector3 randomOffset = Random.insideUnitSphere * patrolRange;
-        randomOffset.y = 0f; // Keep on same height
-        patrolDestination = startPosition + randomOffset;
-        patrolTimer = patrolWaitTime;
-    }
+    // void PickNewPatrolDestination()
+    // {
+    //     // Random point within patrol range
+    //     Vector3 randomOffset = Random.insideUnitSphere * patrolRange;
+    //     randomOffset.y = 0f; // Keep on same height
+    //     patrolDestination = startPosition + randomOffset;
+    //     patrolTimer = patrolWaitTime;
+    // }
 
     bool IsInLightCone(Light light)
     {
