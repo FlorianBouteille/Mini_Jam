@@ -8,7 +8,6 @@ public class MessagingSystem : MonoBehaviour
     private bool hasUnreadMessages = false;
 
     public static Action<Message> OnMessageReceived; // Fired when a new message arrives
-    public static Action OnMessageRead; // Fired when user opens messages app
 
     public static MessagingSystem Instance { get; private set; }
 
@@ -52,7 +51,6 @@ public class MessagingSystem : MonoBehaviour
     public void MarkAsRead()
     {
         hasUnreadMessages = false;
-        OnMessageRead?.Invoke();
     }
 
     public bool HasUnreadMessages()
