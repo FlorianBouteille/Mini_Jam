@@ -6,7 +6,7 @@ public class butterfly : MonoBehaviour
     [Tooltip("Distance at which the enemy detects the light")]
     public float lightDetectionRange = 20f;
     [Tooltip("Small detection range when NO music is playing (always dangerous)")]
-    public float chargeDetectionRangeNoMusic = 8f;
+    public float chargeDetectionRangeNoMusic = 5f;
 
     [Header("Music Detection (Sleep)")]
     [Tooltip("Radius of sound detection (when Spotify is playing)")]
