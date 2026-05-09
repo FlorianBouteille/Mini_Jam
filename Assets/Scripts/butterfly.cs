@@ -44,6 +44,12 @@ public class butterfly : MonoBehaviour
     private Rigidbody rb;
     private Vector3 startPosition;
 
+    // Animation
+    private Animator animator;
+    private const int ANIM_STATE_FLY = 0;
+    private const int ANIM_STATE_FALL_ASLEEP = 1;
+    private const int ANIM_STATE_SLEEP = 2;
+
     // Idle flying state
     private Vector3 circleCenter;
     private float circleAngle;
@@ -60,6 +66,11 @@ public class butterfly : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         startPosition = transform.position;
         circleCenter = startPosition;
+
+        // Get animator from child
+        animator = GetComponentInChildren<Animator>();
+        if (animator == null)
+            Debug.LogWarning("ButterflyAI: Animator not found in children!");
 
         // Try to find player by tag
         GameObject playerObj = GameObject.FindWithTag("Player");
@@ -83,6 +94,10 @@ public class butterfly : MonoBehaviour
         currentState = ButterflyState.Idle;
         circleAngle = Random.Range(0f, 360f);
         circleRandomOffset = Random.Range(-circleRandomness, circleRandomness);
+
+        // Set initial animation
+        if (animator != null)
+            animator.SetInteger("State", ANIM_STATE_FLY);
     }
 
     void Update()
@@ -235,28 +250,33 @@ public class butterfly : MonoBehaviour
         {
             case ButterflyState.Idle:
                 circleRandomOffset = Random.Range(-circleRandomness, circleRandomness);
+                if (animator != null) animator.SetInteger("State", ANIM_STATE_FLY);
                 break;
 
             case ButterflyState.Charging:
-                // No special init needed
+                if (animator != null) animator.SetInteger("State", ANIM_STATE_FLY);
                 break;
 
             case ButterflyState.FreezePhase:
                 freezeTimer = freezeDuration;
+                if (animator != null) animator.SetInteger("State", ANIM_STATE_FLY);
                 break;
 
             case ButterflyState.FallingAsleep:
                 fallAsleepTimer = fallAsleepDuration;
                 rb.linearVelocity = Vector3.zero;
+                if (animator != null) animator.SetInteger("State", ANIM_STATE_FALL_ASLEEP);
                 break;
 
             case ButterflyState.Sleeping:
                 sleepTimer = sleepDuration;
                 rb.linearVelocity = Vector3.zero;
+                if (animator != null) animator.SetInteger("State", ANIM_STATE_SLEEP);
                 break;
 
             case ButterflyState.WakingUp:
                 wakeUpTimer = 0.5f; // Brief 0.5 sec transition
+                if (animator != null) animator.SetInteger("State", ANIM_STATE_SLEEP);
                 break;
         }
     }
