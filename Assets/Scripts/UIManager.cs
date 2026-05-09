@@ -39,6 +39,9 @@ public class UIManager : MonoBehaviour
     [Header("Health")]
     public TextMeshProUGUI healthDisplayTMP;  // Displays health as "3.5 / 5"
 
+    [Header("Messaging")]
+    public GameObject messagingNotificationBadge;  // Icon that shows when unread messages
+
     [Header("Behavior")]
     public KeyCode toggleKey = KeyCode.Tab;
     public MonoBehaviour[] disableOnOpen;
@@ -51,11 +54,15 @@ public class UIManager : MonoBehaviour
     void OnEnable()
     {
         PlayerHealth.OnHealthChanged += HandleHealthChanged;
+        MessagingSystem.OnMessageReceived += HandleMessageReceived;
+        OnActiveAppChanged += HandleActiveAppChanged;
     }
 
     void OnDisable()
     {
         PlayerHealth.OnHealthChanged -= HandleHealthChanged;
+        MessagingSystem.OnMessageReceived -= HandleMessageReceived;
+        OnActiveAppChanged -= HandleActiveAppChanged;
     }
 
     void Start()
@@ -72,6 +79,10 @@ public class UIManager : MonoBehaviour
         playerHealth = FindObjectOfType<PlayerHealth>();
         if (playerHealth == null)
             Debug.LogWarning("UIManager: PlayerHealth not found!");
+
+        // Initialize messaging notification badge
+        if (messagingNotificationBadge != null)
+            messagingNotificationBadge.SetActive(false);
     }
 
     void Awake()
@@ -149,7 +160,9 @@ public class UIManager : MonoBehaviour
         for (int i = 0; i < apps.Count; i++)
         {
             if (apps[i].appPanel != null)
+            {
                 apps[i].appPanel.SetActive(i == index);
+            }
         }
 
         // show active icon if provided
@@ -243,5 +256,29 @@ public class UIManager : MonoBehaviour
         float starsDisplay = currentHealth / 2f;
         float maxStars = maxHealth / 2f;
         healthDisplayTMP.text = $"{starsDisplay:F1} / {maxStars:F0}";
+    }
+
+    void HandleMessageReceived(Message msg)
+    {
+        // Show notification badge
+        if (messagingNotificationBadge != null)
+            messagingNotificationBadge.SetActive(true);
+
+        Debug.Log($"UIManager: New message badge shown");
+    }
+
+    void HandleActiveAppChanged(int appIndex)
+    {
+        // Check if Messages app is being opened
+        if (appIndex >= 0 && appIndex < apps.Count)
+        {
+            string appName = apps[appIndex].name.ToLowerInvariant();
+            if (appName.Contains("message") || appName.Contains("sms") || appName.Contains("texto"))
+            {
+                // Messages app opened - hide notification
+                if (messagingNotificationBadge != null)
+                    messagingNotificationBadge.SetActive(false);
+            }
+        }
     }
 }
