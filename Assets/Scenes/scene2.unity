@@ -1175,7 +1175,7 @@ GameObject:
   m_TagString: Ground
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 2147483647
+  m_StaticEditorFlags: 0
   m_IsActive: 1
 --- !u!154 &918732767
 TerrainCollider:
@@ -1477,7 +1477,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 93b1d30d6b4af228aa92c0da5b129756, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -6.2
+      value: -7.1
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 93b1d30d6b4af228aa92c0da5b129756, type: 3}
       propertyPath: m_LocalPosition.z
@@ -2155,6 +2155,8 @@ GameObject:
   - component: {fileID: 1861514107}
   - component: {fileID: 1861514109}
   - component: {fileID: 1861514108}
+  - component: {fileID: 1861514110}
+  - component: {fileID: 1861514111}
   m_Layer: 0
   m_Name: Circle (1)
   m_TagString: water
@@ -2171,7 +2173,7 @@ Transform:
   m_GameObject: {fileID: 1861514106}
   serializedVersion: 2
   m_LocalRotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071067}
-  m_LocalPosition: {x: -0, y: 0.7418003, z: 0}
+  m_LocalPosition: {x: -0, y: 0.7381, z: 0}
   m_LocalScale: {x: 0.80035967, y: 0.80035967, z: 0.80035967}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2234,6 +2236,39 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1861514106}
   m_Mesh: {fileID: -2124705421725058983, guid: b6d90f72084414f52b4179bf556ead24, type: 3}
+--- !u!65 &1861514110
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1861514106}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1.1755177, y: 2, z: 0.07265104}
+  m_Center: {x: -0.052065045, y: 1.1112339e-16, z: -0.042332187}
+--- !u!114 &1861514111
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1861514106}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a174ecf91c55512e98e61eb3c09b42ac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
 --- !u!4 &1874557641 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 93b1d30d6b4af228aa92c0da5b129756, type: 3}

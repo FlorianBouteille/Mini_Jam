@@ -488,6 +488,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: labyrinthe
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: d83115e6da9884cfcb993c382e019896, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -1251,6 +1255,7 @@ MonoBehaviour:
   rechargeRate: 2.5
   batteryDisplayTMP: {fileID: 583582883}
   healthDisplayTMP: {fileID: 263877814}
+  messagingNotificationBadge: {fileID: 0}
   toggleKey: 9
   disableOnOpen:
   - {fileID: 0}
@@ -3416,6 +3421,10 @@ MonoBehaviour:
   chargeDetectionRangeNoMusic: 5
   musicDetectionRadius: 10
   chargeSpeed: 7
+  explosionForce: 20
+  explosionRadius: 5
+  explosionEffectPrefab: {fileID: 0}
+  maxHealth: 3
   idleFlightSpeed: 4
   circleFlightRadius: 10
   circleRandomness: 0.3

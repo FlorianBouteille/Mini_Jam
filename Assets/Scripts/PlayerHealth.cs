@@ -163,5 +163,11 @@ public class PlayerHealth : MonoBehaviour
             Debug.Log("Taking dammage");
             TakeDamage();
         }
+        else if (collision.CompareTag("water"))
+        {
+            // Instant death if player touches water
+            PlayerHealth.Instance.Die();
+            
+        }
     }
 }
