@@ -15,5 +15,4 @@ public class DeathZone : MonoBehaviour
             other.GetComponent<Rigidbody>().linearVelocity = Vector3.zero;
         }
     }
-    // Update is called once per frame
 }
