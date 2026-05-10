@@ -274,6 +274,7 @@ public class butterfly : MonoBehaviour
                 break;
 
             case ButterflyState.Charging:
+                BestiaryManager.Instance?.UnlockImage("Butterfly");
                 if (animator != null) animator.SetInteger("State", ANIM_STATE_FLY);
                 break;
 
@@ -289,6 +290,7 @@ public class butterfly : MonoBehaviour
                 break;
 
             case ButterflyState.Sleeping:
+                BestiaryManager.Instance?.UnlockDescription("Butterfly");
                 sleepTimer = sleepDuration;
                 rb.linearVelocity = Vector3.zero;
                 if (animator != null) animator.SetInteger("State", ANIM_STATE_SLEEP);

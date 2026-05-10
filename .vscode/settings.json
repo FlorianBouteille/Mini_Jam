@@ -67,6 +67,6 @@
         "*.sln": "*.csproj",
         "*.slnx": "*.csproj"
     },
-    "dotnet.defaultSolution": "minijam_astral.slnx",
+    "dotnet.defaultSolution": "Mini_Jam.slnx",
     "dotnet.enableWorkspaceBasedDevelopment": false
 }

@@ -1,0 +1,89 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &6430368147478128310
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4919252011257546349}
+  - component: {fileID: 2315314796298762798}
+  - component: {fileID: 2972282335114859245}
+  m_Layer: 0
+  m_Name: UiManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &4919252011257546349
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6430368147478128310}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 6626.8613}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: -367.14304, y: -0.00002}
+  m_SizeDelta: {x: 200, y: 50}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &2315314796298762798
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6430368147478128310}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b2e853b96e1e16440b31011c61bdcd60, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UIManager
+  menuPanel: {fileID: 0}
+  firstSelected: {fileID: 0}
+  apps:
+  - name: Photo
+    icon: {fileID: 21300000, guid: fd5b459bc748a6844b84246124d46c24, type: 3}
+    appPanel: {fileID: 0}
+  - name: Spotify
+    icon: {fileID: 21300000, guid: 5542ce8b2af5f934ba1e594d172f69b8, type: 3}
+    appPanel: {fileID: 0}
+  - name: Messages
+    icon: {fileID: 21300000, guid: e89f7804f6604524893d02848fbdc994, type: 3}
+    appPanel: {fileID: 0}
+  - name: Bestiaire
+    icon: {fileID: 21300000, guid: cd75196347b016843872a43b8e8b5744, type: 3}
+    appPanel: {fileID: 0}
+  activeAppIcon: {fileID: 0}
+  activeAppIconContainer: {fileID: 0}
+  defaultAppIcon: {fileID: 21300000, guid: b6fc2da9fc2974248ac17ebeecb2f46b, type: 3}
+  activeAppIndex: -1
+  activeAppName: 
+  battery: 100
+  idleDrainRate: 0.5
+  activeDrainRate: 2
+  rechargeRate: 2.5
+  batteryDisplayTMP: {fileID: 0}
+  healthDisplayTMP: {fileID: 0}
+  messagingNotificationBadge: {fileID: 0}
+  toggleKey: 9
+  disableOnOpen:
+  - {fileID: 0}
+--- !u!222 &2972282335114859245
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6430368147478128310}
+  m_CullTransparentMesh: 1

@@ -18,12 +18,11 @@ public class MessagingUI : MonoBehaviour
     private List<GameObject> listItems = new List<GameObject>();
     private Message selectedMessage;
 
-    void Start()
+    void Awake()
     {
-        Debug.Log("MessagingUI: Start() called");
-        // Subscribe to message events early
-        MessagingSystem.OnMessageReceived += HandleMessageReceived;
-        Debug.Log("MessagingUI: Subscribed to OnMessageReceived");
+        // Subscribe to message events EARLY (even if script is inactive)
+        if (MessagingSystem.Instance != null)
+            MessagingSystem.OnMessageReceived += HandleMessageReceived;
     }
 
     void OnEnable()
@@ -36,30 +35,20 @@ public class MessagingUI : MonoBehaviour
             MessagingSystem.Instance.MarkAsRead();
     }
 
-    void OnDisable()
+    void OnDestroy()
     {
-        // Keep subscribed even when disabled
+        MessagingSystem.OnMessageReceived -= HandleMessageReceived;
     }
 
     void HandleMessageReceived(Message msg)
     {
-        Debug.Log($"HandleMessageReceived called for message from {msg.sender}");
-        Debug.Log($"MessagingSystem.Instance exists? {MessagingSystem.Instance != null}");
         // Refresh list when a new message arrives
         RefreshMessageList();
     }
 
     void RefreshMessageList()
     {
-        Debug.Log("RefreshMessageList called");
-        if (MessagingSystem.Instance == null)
-        {
-            Debug.LogError("MessagingSystem.Instance is NULL!");
-            return;
-        }
-
-        Debug.Log($"messageListContainer is null? {messageListContainer == null}");
-        Debug.Log($"messageListItemPrefab is null? {messageListItemPrefab == null}");
+        if (MessagingSystem.Instance == null) return;
 
         // Clear old list items
         foreach (GameObject item in listItems)
@@ -68,12 +57,10 @@ public class MessagingUI : MonoBehaviour
 
         // Get messages (newest first)
         List<Message> messages = MessagingSystem.Instance.GetMessages();
-        Debug.Log($"Found {messages.Count} messages");
 
         // Create list items
         foreach (Message msg in messages)
         {
-            Debug.Log($"Creating item for message from {msg.sender}");
             GameObject itemGO = Instantiate(messageListItemPrefab, messageListContainer);
             Button button = itemGO.GetComponent<Button>();
             TextMeshProUGUI buttonText = itemGO.GetComponentInChildren<TextMeshProUGUI>();
@@ -83,7 +70,7 @@ public class MessagingUI : MonoBehaviour
 
             if (button != null)
             {
-                Message msgRef = msg; // Capture for closure
+                Message msgRef = msg;
                 button.onClick.AddListener(() => SelectMessage(msgRef));
             }
 

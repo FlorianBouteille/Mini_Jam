@@ -22,9 +22,21 @@ public class PlayerHealth : MonoBehaviour
     public static Action OnPlayerDeath;
     public static Action OnPlayerRespawn;
 
+    public static PlayerHealth Instance { get; private set; }
+
     private Rigidbody rb;
     private PlayerControls playerControls;
     private UIManager uiManager;
+
+    void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
+    }
 
     void Start()
     {
