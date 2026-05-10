@@ -16,6 +16,19 @@ public class butterfly : MonoBehaviour
     [Tooltip("Speed at which the butterfly charges toward the player")]
     public float chargeSpeed = 12f;
 
+    [Header("Explosion")]
+    [Tooltip("Force d'impulsion appliquée au joueur lors de l'explosion")]
+    public float explosionForce = 20f;
+    [Tooltip("Rayon de l'explosion")]
+    public float explosionRadius = 5f;
+    [Tooltip("Prefab de l'effet d'explosion")]
+    public GameObject explosionEffectPrefab;
+
+    [Header("Health")]
+    [Tooltip("Santé du papillon")]
+    public float maxHealth = 3f;
+    private float currentHealth;
+
     [Header("Idle Flying")]
     [Tooltip("Speed while flying in circles")]
     public float idleFlightSpeed = 4f;
@@ -35,7 +48,7 @@ public class butterfly : MonoBehaviour
     public float wakeTimerTickRate = 2f;
 
     // Private state variables
-    private enum ButterflyState { Idle, Charging, FreezePhase, FallingAsleep, Sleeping, WakingUp }
+    private enum ButterflyState { Idle, Charging, FreezePhase, FallingAsleep, Sleeping, WakingUp, Exploding }
     private ButterflyState currentState = ButterflyState.Idle;
 
     private Transform playerTransform;
@@ -43,6 +56,7 @@ public class butterfly : MonoBehaviour
     private PlayerAppPowers playerAppPowers;
     private Rigidbody rb;
     private Vector3 startPosition;
+    private Rigidbody playerRb;
 
     // Animation
     private Animator animator;
@@ -66,6 +80,7 @@ public class butterfly : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         startPosition = transform.position;
         circleCenter = startPosition;
+        currentHealth = maxHealth;
 
         // Get animator from child
         animator = GetComponentInChildren<Animator>();
@@ -77,6 +92,7 @@ public class butterfly : MonoBehaviour
         if (playerObj != null)
         {
             playerTransform = playerObj.transform;
+            playerRb = playerObj.GetComponent<Rigidbody>();
             // Try to find the Light (could be on player or in children)
             playerLight = playerObj.GetComponentInChildren<Light>();
             if (playerLight == null)
@@ -239,6 +255,10 @@ public class butterfly : MonoBehaviour
             case ButterflyState.WakingUp:
                 SleepBehavior(); // Still immobile while waking up
                 break;
+
+            case ButterflyState.Exploding:
+                // Ne rien faire pendant l'explosion
+                break;
         }
     }
 
@@ -325,6 +345,260 @@ public class butterfly : MonoBehaviour
     {
         // Completely immobile
         rb.linearVelocity = Vector3.zero;
+    }
+
+    public void TakeDamage(float damageAmount)
+    {
+        currentHealth -= damageAmount;
+        if (currentHealth <= 0)
+        {
+            Die();
+        }
+    }
+
+    void Die()
+    {
+        // Créer un effet d'explosion visuel
+        CreateExplosionEffect();
+
+        // Appliquer une impulsion au joueur
+        if (playerRb != null && playerTransform != null)
+        {
+            Vector3 explosionDirection = (playerTransform.position - transform.position).normalized;
+            playerRb.AddForce(explosionDirection * explosionForce, ForceMode.Impulse);
+        }
+
+        // Détruire le papillon
+        Destroy(gameObject);
+    }
+
+    void CreateExplosionEffect()
+    {
+        // GameObject parent pour l'explosion
+        GameObject explosionObj = new GameObject("Explosion");
+        explosionObj.transform.position = transform.position;
+
+        // Ajouter une lumière flash (explosion principale)
+        Light flashLight = explosionObj.AddComponent<Light>();
+        flashLight.type = LightType.Point;
+        flashLight.intensity = 8f;
+        flashLight.range = 40f;
+        flashLight.color = new Color(1f, 0.7f, 0.2f); // Orange chaud
+
+        // Jouer le son d'explosion
+        PlayExplosionSound(explosionObj);
+
+        // Créer les particules de feu
+        CreateFireParticles(explosionObj);
+
+        // Créer les particules de fumée
+        CreateSmokeParticles(explosionObj);
+
+        // Créer les débris/étincelles
+        CreateDebrisParticles(explosionObj);
+
+        // Animation de la lumière
+        StartCoroutine(AnimateExplosionLight(flashLight));
+
+        // Détruire après 3 secondes
+        Destroy(explosionObj, 3f);
+    }
+
+    void PlayExplosionSound(GameObject explosionObj)
+    {
+        // Créer une source audio
+        AudioSource audioSource = explosionObj.AddComponent<AudioSource>();
+        audioSource.volume = 1f;
+        audioSource.pitch = Random.Range(0.9f, 1.1f); // Légère variation de pitch
+        audioSource.spatialBlend = 1f; // 3D audio
+
+        // Essayer de charger un son d'explosion
+        AudioClip explosionClip = Resources.Load<AudioClip>("Sounds/explosion");
+        
+        if (explosionClip != null)
+        {
+            audioSource.PlayOneShot(explosionClip);
+        }
+        else
+        {
+            // Si pas de son, créer un bruit synthétique
+            CreateSynthExplosionSound(audioSource);
+        }
+    }
+
+    void CreateSynthExplosionSound(AudioSource audioSource)
+    {
+        // Créer un clip audio synthétique (explosion basse)
+        int sampleRate = 44100;
+        float duration = 0.5f;
+        int samples = (int)(sampleRate * duration);
+        float[] audioData = new float[samples];
+
+        for (int i = 0; i < samples; i++)
+        {
+            float t = (float)i / sampleRate;
+            float progress = t / duration;
+
+            // Onde sinusoïdale décroissante pour simuler une explosion
+            float frequency = Mathf.Lerp(200f, 50f, progress); // Fréquence qui baisse
+            float amplitude = Mathf.Exp(-4f * progress); // Volume qui diminue
+            float noise = Random.Range(-0.3f, 0.3f); // Bruit blanc
+
+            audioData[i] = (Mathf.Sin(2f * Mathf.PI * frequency * t) * amplitude + noise * amplitude) * 0.8f;
+        }
+
+        // Créer le clip
+        AudioClip clip = AudioClip.Create("ExplosionSound", samples, 1, sampleRate, false);
+        clip.SetData(audioData, 0);
+
+        audioSource.clip = clip;
+        audioSource.Play();
+    }
+
+    void CreateFireParticles(GameObject parent)
+    {
+        int particleCount = 30;
+        for (int i = 0; i < particleCount; i++)
+        {
+            GameObject particle = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            particle.transform.parent = parent.transform;
+            particle.transform.localPosition = Vector3.zero;
+            
+            // Taille aléatoire
+            float scale = Random.Range(0.1f, 0.4f);
+            particle.transform.localScale = Vector3.one * scale;
+
+            // Supprimer le collider
+            Collider col = particle.GetComponent<Collider>();
+            if (col != null)
+                Destroy(col);
+
+            // Matériau orange/rouge (explosion)
+            Renderer renderer = particle.GetComponent<Renderer>();
+            Material mat = new Material(Shader.Find("Standard"));
+            mat.color = Color.Lerp(new Color(1f, 0.5f, 0f), new Color(1f, 0.2f, 0f), Random.value);
+            renderer.material = mat;
+
+            // Ajouter un composant pour animer la particule
+            ParticlePhysics pp = particle.AddComponent<ParticlePhysics>();
+            pp.duration = Random.Range(0.8f, 1.5f);
+            pp.direction = Random.onUnitSphere;
+            pp.speed = Random.Range(8f, 15f);
+            pp.gravity = 5f;
+        }
+    }
+
+    void CreateSmokeParticles(GameObject parent)
+    {
+        int particleCount = 20;
+        for (int i = 0; i < particleCount; i++)
+        {
+            GameObject particle = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            particle.transform.parent = parent.transform;
+            particle.transform.localPosition = Vector3.zero;
+
+            // Taille plus grande pour la fumée
+            float scale = Random.Range(0.2f, 0.6f);
+            particle.transform.localScale = Vector3.one * scale;
+
+            // Supprimer le collider
+            Collider col = particle.GetComponent<Collider>();
+            if (col != null)
+                Destroy(col);
+
+            // Matériau orange (fumée d'explosion)
+            Renderer renderer = particle.GetComponent<Renderer>();
+            Material mat = new Material(Shader.Find("Standard"));
+            mat.color = Color.Lerp(new Color(1f, 0.6f, 0f), new Color(1f, 0.4f, 0.1f), Random.value);
+            renderer.material = mat;
+
+            // Ajouter un composant pour animer la particule
+            ParticlePhysics pp = particle.AddComponent<ParticlePhysics>();
+            pp.duration = Random.Range(1.5f, 2.5f);
+            pp.direction = Random.onUnitSphere;
+            pp.speed = Random.Range(3f, 8f);
+            pp.gravity = -2f; // Remonte avec la chaleur
+            pp.isSmokeParticle = true;
+        }
+    }
+
+    void CreateDebrisParticles(GameObject parent)
+    {
+        int particleCount = 15;
+        for (int i = 0; i < particleCount; i++)
+        {
+            GameObject particle = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            particle.transform.parent = parent.transform;
+            particle.transform.localPosition = Vector3.zero;
+
+            // Petits débris
+            float scale = Random.Range(0.05f, 0.15f);
+            particle.transform.localScale = Vector3.one * scale;
+
+            // Supprimer le collider
+            Collider col = particle.GetComponent<Collider>();
+            if (col != null)
+                Destroy(col);
+
+            // Matériau orange/marron (débris brûlés)
+            Renderer renderer = particle.GetComponent<Renderer>();
+            Material mat = new Material(Shader.Find("Standard"));
+            mat.color = Color.Lerp(new Color(1f, 0.4f, 0f), new Color(0.8f, 0.3f, 0.1f), Random.value);
+            renderer.material = mat;
+
+            // Ajouter un composant pour animer la particule
+            ParticlePhysics pp = particle.AddComponent<ParticlePhysics>();
+            pp.duration = Random.Range(0.5f, 1.5f);
+            pp.direction = Random.onUnitSphere;
+            pp.speed = Random.Range(15f, 25f);
+            pp.gravity = 15f;
+            pp.isDebris = true;
+        }
+    }
+
+    System.Collections.IEnumerator AnimateExplosionLight(Light light)
+    {
+        float elapsed = 0f;
+        float duration = 0.3f; // Flash rapide
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float progress = elapsed / duration;
+            light.intensity = Mathf.Lerp(8f, 0f, progress * progress);
+            yield return null;
+        }
+
+        light.intensity = 0f;
+    }
+
+    void Explode()
+    {
+        // Transition to exploding state
+        TransitionTo(ButterflyState.Exploding);
+
+        // Créer l'effet d'explosion visuel
+        CreateExplosionEffect();
+
+        // Appliquer une impulsion au joueur
+        if (playerRb != null)
+        {
+            Vector3 explosionDirection = (playerTransform.position - transform.position).normalized;
+            playerRb.AddForce(explosionDirection * explosionForce, ForceMode.Impulse);
+        }
+
+        // Désactiver et détruire le papillon
+        gameObject.SetActive(false);
+        Destroy(gameObject);
+    }
+
+    void OnTriggerEnter(Collider collision)
+    {
+        // Vérifier si c'est le joueur
+        if (collision.CompareTag("Player") && currentState == ButterflyState.Charging)
+        {
+            Explode();
+        }
     }
 
     bool IsInLightCone(Light light)
