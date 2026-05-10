@@ -119,8 +119,11 @@ public class DarkElfAI : MonoBehaviour
         float distToPlayer = Vector3.Distance(transform.position, playerTransform.position);
         isCharging = distToPlayer < detectionRange;
         if (isCharging)
+        {
+            BestiaryManager.Instance?.UnlockImage("DarkElf");
             if (animator != null)
                 animator.SetInteger("State", ANIM_STATE_RUN);
+        }
         // Check if in light cone
         isInLight = false;
         if (playerLight != null && playerLight.enabled && playerLight.type == LightType.Spot)
@@ -131,6 +134,7 @@ public class DarkElfAI : MonoBehaviour
         // Manage flee timer
         if (isInLight)
         {
+            BestiaryManager.Instance?.UnlockDescription("DarkElf");
             // In light: reset flee timer to duration
             fleeTimer = fleeAfterLightDuration;
         }
