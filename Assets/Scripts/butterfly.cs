@@ -594,13 +594,14 @@ public class butterfly : MonoBehaviour
         Destroy(gameObject);
     }
 
-    void OnTriggerEnter(Collider collision)
+    void OnCollisionEnter(Collision collision)
     {
         // Vérifier si c'est le joueur
-        if (collision.CompareTag("Player") && currentState == ButterflyState.Charging)
+        if (collision.gameObject.CompareTag("Player") && currentState == ButterflyState.Charging)
         {
+            collision.gameObject.GetComponent<PlayerHealth>()?.TakeDamage();
             Explode();
-        }
+        }   
     }
 
     bool IsInLightCone(Light light)
