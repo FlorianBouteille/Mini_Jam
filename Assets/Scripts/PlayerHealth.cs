@@ -1,5 +1,6 @@
 using UnityEngine;
 using System;
+using UnityEngine.SceneManagement;
 
 public class PlayerHealth : MonoBehaviour
 {
@@ -97,32 +98,8 @@ public class PlayerHealth : MonoBehaviour
 
     public void Respawn()
     {
-        // Reset position
-        if (rb != null)
-        {
-            rb.linearVelocity = Vector3.zero;
-            transform.position = respawnPosition;
-        }
-        else
-        {
-            transform.position = respawnPosition;
-        }
-
-        // Reset health
-        currentHealth = maxHealth;
-        invulnerabilityTimer = 0f;
-
-        // Reset battery
-        if (uiManager != null)
-        {
-            uiManager.battery = 100f;
-        }
-
-        // Notify UI
-        OnHealthChanged?.Invoke(currentHealth, maxHealth);
-        OnPlayerRespawn?.Invoke();
-
-        Debug.Log("PlayerHealth: Player respawned!");
+        // Reload the current scene
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
     /// <summary>

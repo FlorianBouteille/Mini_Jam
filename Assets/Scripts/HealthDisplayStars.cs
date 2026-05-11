@@ -58,4 +58,23 @@ public class HealthDisplayStars : MonoBehaviour
             Debug.LogWarning($"HealthDisplayStars: Sprite missing at index {spriteIndex}!");
         }
     }
+
+    /// <summary>
+    /// Retourne le sprite approprié pour une santé donnée
+    /// </summary>
+    public Sprite GetHealthSprite(int health)
+    {
+        // Clamp to valid range
+        int healthIndex = Mathf.Clamp(health, 1, 10);
+        
+        // Map: health 10->index 0, health 9->index 1, ..., health 1->index 8
+        int spriteIndex = 10 - healthIndex;
+
+        if (spriteIndex >= 0 && spriteIndex < starSprites.Length && starSprites[spriteIndex] != null)
+        {
+            return starSprites[spriteIndex];
+        }
+        
+        return null;
+    }
 }
